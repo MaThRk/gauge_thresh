@@ -39,7 +39,6 @@ res = get_station_by_distance(position = landslides, station_sf = stations.sf)
 stat_id = imap_dfr(stations, ~ .x %>% mutate(id = .y))
 
 
-
 # -------------------------------------------------------------------------
 # give each station the date it is supposed to
 for (i in 1:nrow(res)) {
