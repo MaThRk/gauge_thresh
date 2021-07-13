@@ -17,48 +17,90 @@ st = st_transform(st, crs=32632)
 
 # -------------------------------------------------------------------------
 # get the next station for each landslide
-df = get_station_by_distance(landsld, stations)
+df = get_station_by_distance(landsld)
 top_stations = df$stations %>% map(~.x[1,]) %>% bind_rows() %>% st_drop_geometry()
 
 df_dis = bind_cols(landsld, top_stations)
 
 
 # -------------------------------------------------------------------------
+# bounding box
+bb = st_bbox(st)
+
+
+# -------------------------------------------------------------------------
+# hillshade
+hs = read_stars("~/geodata/hillshades_south_tyrol/grey_scale_100m.tif")
+
+
+
+# -------------------------------------------------------------------------
 # plot the average distance
 
 m = mean(df_dis$distance)
+a =make_voronoi(landsld)[[1]]
 
 ggplot() +
-  geom_sf(data=st) +
+    geom_stars(
+      data = hs,
+      aes(x = x, y = y, fill = grey_scale_100m.tif),
+      downsample = 0,
+      show.legend = F) +
+  geom_sf(data=st,
+          fill = "#D2D7DF") +
   geom_sf(data = df_dis,
           aes(col = as.numeric(distance))) +
-  scale_color_scico(palette = "berlin",
-                    name = "Distance to next rain gauge [m]") +
-  theme_map() +
-  coord_sf(datum = 32632) +
-  guides(color = guide_colorbar(title.position = "top",
-                                barwidth = unit(15, "lines"))) +
-  geom_label(
+  geom_sf(
+    data = stations,
+    col = "red",
     aes(
-    x = 626000,
-    y = 5200000,
-    label = glue("Average Distance: {round(m,2)} [m]")
+      shape ="Rain Gauge",
     ),
-    family = "Times New Roman",
-    size = 5
+    size = 4
   ) +
+  # geom_sf(data = ,
+  #         size = .2,
+  #         alpha = .1) +
+  scale_color_scico(palette = "bilbao",
+                    name = "Distance from Landslide to next rain gauge [m]") +
+  scale_shape_manual(values = c("Rain Gauge" = 4),
+                     name = "") +
+  scale_fill_continuous(low="black", high="white", na.value="transparent") +
+  coord_sf(xlim = c(bb[c(1,3)]),
+           ylim = c(bb[c(2,4)]),
+           datum = st_crs(32632)) +
+  theme_map() +
+  guides(color = guide_legend(title.position = "top")) +
+  # geom_label(
+  #   aes(
+  #   x = 626000,
+  #   y = 5200000,
+  #   ),
+  #   family = "Times New Roman",
+  #   size = 5
+  # ) +
   labs(
-    title = "Distance to next Rain Gauge for each slide"
+    title = "Distance to next Rain Gauge for each slide",
+    subtitle = glue("Average Distance: {round(m,2)} [m]")
   ) +
   theme(
-    plot.title = element_text(family="Times New Roman", hjust=.5),
-    legend.title = element_text(family="Times New Roman"),
-    legend.text = element_text(family="Times New Roman"),
-    legend.position = c(.6,.2),
-    legend.direction = "horizontal"
+    plot.title = element_text(family="Times New Roman", hjust=.5, size=16),
+    legend.title = element_text(family="Times New Roman", size=15),
+    plot.subtitle = element_text(hjust=.5, family="Times New Roman"),
+    legend.text = element_text(family="Times New Roman", size=14),
+    legend.position = c(.55,.1),
+    legend.background = element_rect(color="black", linetype = "dashed"),
+    legend.direction = "horizontal",
+    legend.margin = margin(rep(8,4)),
+    legend.box.just = "right"
   )
 
-f = here(mahelp::file_dir(), "avg_distance.png")
+f = here(mahelp::file_dir(), "avg_distance_with_voronoi_overlay.png")
 ggsave(f, width=12, height=8)
+
+
+
+
+
 
 
