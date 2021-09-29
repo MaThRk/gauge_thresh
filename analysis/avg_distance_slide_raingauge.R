@@ -49,20 +49,21 @@ ggplot() +
   geom_sf(data=st,
           fill = "#D2D7DF") +
   geom_sf(data = df_dis,
-          aes(col = as.numeric(distance))) +
+          aes(col = as.numeric(distance)),
+          size = 3) +
   geom_sf(
     data = stations,
     col = "red",
     aes(
       shape ="Rain Gauge",
     ),
-    size = 4
+    size = 6
   ) +
   # geom_sf(data = ,
   #         size = .2,
   #         alpha = .1) +
   scale_color_scico(palette = "bilbao",
-                    name = "Distance from Landslide to next rain gauge [m]") +
+                    name = "Distance from Landslide\nto next rain gauge [m]") +
   scale_shape_manual(values = c("Rain Gauge" = 4),
                      name = "") +
   scale_fill_continuous(low="black", high="white", na.value="transparent") +
@@ -84,19 +85,19 @@ ggplot() +
     subtitle = glue("Average Distance: {round(m,2)} [m]")
   ) +
   theme(
-    plot.title = element_text(family="Times New Roman", hjust=.5, size=16),
-    legend.title = element_text(family="Times New Roman", size=15),
+    plot.title = element_text(family="Times New Roman", hjust=.5, size=22),
     plot.subtitle = element_text(hjust=.5, family="Times New Roman"),
-    legend.text = element_text(family="Times New Roman", size=14),
-    legend.position = c(.55,.1),
+    legend.text = element_text(family="Times New Roman", size=18),
+    legend.title = element_text(family="Times New Roman", size=19),
+    legend.position = c(.7,.2),
     legend.background = element_rect(color="black", linetype = "dashed"),
     legend.direction = "horizontal",
     legend.margin = margin(rep(8,4)),
     legend.box.just = "right"
-  )
+  ) -> pl
 
 f = here(mahelp::file_dir(), "avg_distance_with_voronoi_overlay.png")
-ggsave(f, width=12, height=8)
+ggsave(f, plot=pl, width=12, height=8)
 
 
 

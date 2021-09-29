@@ -8,6 +8,17 @@ get_station_information() %>%
          end = lubridate::year(as.Date(end))) %>%
   mutate(name = glue("{name} ({round(y, 0)})")) %>% {
     ggplot(.) +
+      geom_rect(
+        aes(
+          xmin = 2000,
+          xmax = Inf,
+          ymin = -Inf,
+          ymax = Inf,
+          fill = "a"
+        ),
+        # fill = "#f2f2f2",
+        alpha = .01
+      ) +
       geom_segment(aes(
         x = start,
         xend = end,
@@ -35,11 +46,19 @@ get_station_information() %>%
       #              label = date_format("%Y")) +
       scale_color_scico(palette = "berlin",
                         name = "Years of Data") +
-      guides(color = guide_colorbar(
-        barwidth = unit(20, "lines"),
-        title.position = "top",
-        title.hjust = .5
-      )) +
+      scale_fill_manual(values = c("a" = "lightgrey"),
+                            labels = c("a" = ""),
+                        name  = "Years of interest") +
+      guides(
+        color = guide_colorbar(
+          barwidth = unit(20, "lines"),
+          title.position = "top",
+          title.hjust = .5
+        ),
+        fill = guide_legend(title.position = "top",
+                                title.hjust = .5)
+
+      ) +
       theme(
         panel.grid.minor = element_blank(),
         legend.position = "bottom",
@@ -62,3 +81,13 @@ get_station_information() %>%
 
 f = here(file_dir(), "stations.png")
 ggsave(f, width = 12, height = 8)
+
+
+
+get_station_information() %>%
+  mutate(y = as.numeric(as.Date(end) - as.Date(start)) / 365)  %>%
+  mutate(linesep = rep(c("a", "b"), nrow(.) / 2)) %>%
+  mutate(start = lubridate::year(as.Date(start)),
+         end = lubridate::year(as.Date(end))) %>%
+  select(name, start, end)
+
